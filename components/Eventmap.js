@@ -35,8 +35,6 @@ const Eventmap = ({ evt }) => {
 
   if (loading) return false;
 
-  console.log(lat, lng);
-
   return (
     <ReactMapGL
       {...veiwport}
