@@ -1,0 +1,94 @@
+import { createContext, useEffect, useState } from 'react';
+import { NEXT_URL } from '@/config/index';
+import { useRouter } from 'next/router';
+
+export const AuthContext = createContext();
+
+const AuthProvider = ({ children }) => {
+  const [user, setUser] = useState(null);
+  const [error, setError] = useState(null);
+  const router = useRouter();
+
+  useEffect(() => {
+    checkLoggedIn();
+  }, []);
+
+  // login handler
+  const login = async ({ email: identifier, password }) => {
+    const res = await fetch(`${NEXT_URL}/api/login`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ identifier, password }),
+    });
+
+    const data = await res.json();
+    console.log(data);
+    if (res.ok) {
+      setUser(data.user);
+      router.push('/account/dashboard');
+    } else {
+      setError(data.message);
+      setError(null);
+    }
+  };
+
+  // logout handler
+  const logOut = async () => {
+    const res = await fetch(`${NEXT_URL}/api/logout`, {
+      method: 'POST',
+    });
+
+    if (res.ok) {
+      setUser(null);
+      router.push('/');
+    }
+  };
+
+  // register handler
+
+  const register = async ({ username, email, password }) => {
+    const res = await fetch(`${NEXT_URL}/api/register`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ username, email, password }),
+    });
+
+    const data = await res.json();
+    console.log(data, res.ok, 'logging from authContext');
+    if (res.ok) {
+      setUser(data.user);
+      router.push('/account/dashboard');
+    } else {
+      setError(data.message);
+      setError(null);
+    }
+  };
+
+  // lookup any user logged in or not
+
+  const checkLoggedIn = async () => {
+    const res = await fetch(`${NEXT_URL}/api/user`);
+
+    const data = await res.json();
+
+    if (res.ok) {
+      setUser(data.user);
+    } else {
+      setUser(null);
+    }
+  };
+
+  return (
+    <AuthContext.Provider
+      value={{ login, logOut, register, checkLoggedIn, user, error }}
+    >
+      {children}
+    </AuthContext.Provider>
+  );
+};
+
+export default AuthProvider;

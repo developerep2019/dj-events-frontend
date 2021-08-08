@@ -1,0 +1,1 @@
+// When we need to give a error via api endpoint we have to give it something like this : {code : <errorCode>, error : <Error Info>}
